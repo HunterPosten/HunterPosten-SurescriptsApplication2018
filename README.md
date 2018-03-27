@@ -1,9 +1,9 @@
-	Hello and thanks again for considering my application for the Software Engineer internship at Surescripts.
+Hello and thanks again for considering my application for the Software Engineer internship at Surescripts.
 For my code sample I have decided to submit my custom assembler program. I originally wrote a similar program in c
 for my computer architechture class, but after discussing with a softerware engineer at surscripts and learning
 that his team primarily uses Java, I have decided to we write that assembler in Java and to make it more object oriented.
 
-	This program reads instruction text files consisting of UST3400 assembly instructions, and then converts thos instructions to machine code. UST3400 uses a limited instruction set consisiting of eight instructions:
+This program reads instruction text files consisting of UST3400 assembly instructions, and then converts thos instructions to machine code. UST3400 uses a limited instruction set consisiting of eight instructions:
 
 add: Add the contents of RegisterA with the contents of RegisterB, store the results in destReg.
 nand: Bitwise Nand contents of Register A with the contents of RegisterB, each bit is treaded independently
