@@ -61,6 +61,6 @@ and the resulting machine code after being processed by the Assembler would be:
 16842749
 29360128
 25165824
-5
+5 
 -1
 2
