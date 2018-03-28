@@ -141,16 +141,44 @@ public class NewAssembler implements Runnable {
     private File destFile;
     
     public NewAssembler(File instructionFile){
-        File a = new File("AssemblerOut.txt");
+        
+        String path;
+        path = instructionFile.getParent() + File.separator + "AssemblerOut.txt";        
+        File a = new File(path);
+        a.getParentFile().mkdirs();
+        try{
+            a.createNewFile();
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+        
         this.destFile = a;
         this.srcFile = instructionFile;
+
         
     }
     
     public NewAssembler(File instructionFile, File destinationFile){
-        this.srcFile = instructionFile;
-        this.destFile = destinationFile;
         
+        
+        if(!destinationFile.exists()){//if the destination file does not exist
+            String path;
+            File out;
+            path = instructionFile.getParent() + File.separator + destinationFile.getName();
+            out = new File(path);
+            out.getParentFile().mkdirs();
+            try{
+                out.createNewFile();
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+            }
+            this.destFile = out;
+        }
+        else{
+            this.destFile = destinationFile;
+        }
+        
+        this.srcFile = instructionFile;
      
     }
     
@@ -175,49 +203,50 @@ public class NewAssembler implements Runnable {
             instr = instructionsToEncode.get(i);
             instr.instructionEncode();
             
-            if(instr.getType() == 'f'){//.fill
-                immediate = instr.getImmediate();
-                machineCode = immediate;
-                
-            }
-            
-            else if(instr.getType() == 'o'){//otype 
-                opcode = instr.getOpcode();
-                machineCode = opcode << 22;
-                
-            }
-            
-            else if(instr.getType() == 'r'){//rtype
-                opcode = instr.getOpcode() << 22;
-                regA = instr.getRegA() << 19;
-                regB = instr.getRegB() << 16;
-                destReg = instr.getDestReg();
-                machineCode = opcode | regA | regB | destReg;
-               
-            }
-            
-            else if(instr.getType() == 'j'){//jtype
-                opcode = instr.getOpcode() << 22;
-                regA = instr.getRegA() << 19;
-                regB = instr.getRegB() << 16;
-                machineCode = opcode | regA | regB;
-                
-            }
-            
-            else if(instr.getType() == 'i'){//itype
-                opcode = instr.getOpcode() << 22;
-                regA = instr.getRegA() << 19;
-                regB = instr.getRegB() << 16;
-                immediate = instr.getImmediate();
-                machineCode = opcode | regA | regB | immediate;
+            switch (instr.getType()) {
+                case 'f':
+                    //.fill
+                    immediate = instr.getImmediate();
+                    machineCode = immediate;
+                    break;
+                case 'o':
+                    //otype
+                    opcode = instr.getOpcode();
+                    machineCode = opcode << 22;
+                    break;
+                case 'r':
+                    //rtype
+                    opcode = instr.getOpcode() << 22;
+                    regA = instr.getRegA() << 19;
+                    regB = instr.getRegB() << 16;
+                    destReg = instr.getDestReg();
+                    machineCode = opcode | regA | regB | destReg;
+                    break;
+                case 'j':
+                    //jtype
+                    opcode = instr.getOpcode() << 22;
+                    regA = instr.getRegA() << 19;
+                    regB = instr.getRegB() << 16;
+                    machineCode = opcode | regA | regB;
+                    break;
+                case 'i':
+                    //itype
+                    opcode = instr.getOpcode() << 22;
+                    regA = instr.getRegA() << 19;
+                    regB = instr.getRegB() << 16;
+                    immediate = instr.getImmediate();
+                    machineCode = opcode | regA | regB | immediate;
+                    break;
+                default:
+                    break;
             }
            
             ret = ret + machineCode + "\n";   
         }//loop
-        
         //output
-        try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.destFile),"ust-8"))){
-            writer.write(ret);
+        try(PrintWriter out = new PrintWriter(this.destFile)){
+            out.println(ret);
+            System.out.println("Ust-3400 code from: " + srcFile.getName() + " assembled to file: " + destFile.getName());
         }catch(Exception e){
             System.out.println("Assembler process: " + e.getMessage());
         }
@@ -243,9 +272,9 @@ public class NewAssembler implements Runnable {
         for(int i = 0; i < instructionsToEncode.size(); i++){
             a = instructionsToEncode.get(i);
             if(a.Label != null){
-                System.out.println("label found");
+        
                 if(labels.containsKey(a.Label)){
-                    throw new IllegalArgumentException("LabelIndex: instruction has a duplicate label");
+                    throw new IllegalArgumentException("LabelIndex: instruction has a duplicate label: " + a.Label);
                 }
                 else{
                     labels.put(a.Label, i);
@@ -336,6 +365,7 @@ public class NewAssembler implements Runnable {
         
         
         private void convertOpcode(String op){//converts instruction into the opcode
+            op = op.trim();
             switch(op){
                 case ".fill":
                     this.Type = 'f';
@@ -373,7 +403,7 @@ public class NewAssembler implements Runnable {
                     this.Type = 'o';
                     this.opcode = 7;
                 default:
-                    throw new IllegalArgumentException(" instruction: "+ instrLine.toString() + " unrecognized opcode");
+                    throw new IllegalArgumentException(" instruction: "+ instrLine.toString() + " unrecognized opcode:"+ op);
                     
             }
         }//convertOpcode()
@@ -403,7 +433,6 @@ public class NewAssembler implements Runnable {
         public int getDestReg(){
             return this.destReg;
         }
-    }//instruction inner class
-    
+    }//instruction inner class     
 
 }//NewAssembler
